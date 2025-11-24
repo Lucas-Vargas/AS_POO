@@ -24,28 +24,36 @@ public class Venda {
     private final String FILEPATH = "./"+FILENAME;
 
     //construtor
-    public Venda(Cliente cliente, Vendedor vendedor, Produto[] produtos, int quant_parcelas){//Troquei o metodo "NovaVenda()" pelo construtor. Acho que fica mais organizado assim"
+    public Venda(Cliente cliente, Vendedor vendedor, Produto[] produtos, int quant_parcelas){
         this.cliente = cliente;
         this.vendedor = vendedor;
-        this.produto = produtos;
+        this.produto = produtos != null ? produtos : new Produto[0];
         this.quant_parcelas = quant_parcelas;
         this.devolvido = false;
         this.existe = true;
 
-        for(int i = 0; i < produto.length-1; i++)
-        {
-            if(produto[i].getEstoque().getQuantidade() != 0){
-                //subtrai 1 do estoque do produto
-                produtos[i].getEstoque().setQuantidade(produto[i].getEstoque().getQuantidade()-1);
+        // diminuir estoque corretamente para todos produtos
+        for(int i = 0; i < this.produto.length; i++) {
+            if(this.produto[i] != null && this.produto[i].getEstoque() != null) {
+                double q = this.produto[i].getEstoque().getQuantidade();
+                if (q > 0) {
+                    this.produto[i].getEstoque().setQuantidade(q - 1);
+                }
             }
         }
 
+        // calcular valor da venda
+        this.valor = this.calcularValor(this.produto);
+
+        // ajustar id (lê arquivo e incrementa)
         int id_temp = this.getIdFile();
         if(id_temp == -1){
-            this.setIdFile(1);
+            this.id_venda = 1;
+            this.setIdFile(this.id_venda);
         }
         else{
-            this.setIdFile(id_temp+1);
+            this.id_venda = id_temp + 1;
+            this.setIdFile(this.id_venda);
         }
 
     }
@@ -57,7 +65,8 @@ public class Venda {
         try (BufferedReader reader = new BufferedReader(new FileReader(FILEPATH))) {
             id_temp = reader.readLine();
         } catch (IOException e) {
-            System.err.println(":(: " + e.getMessage());
+            // arquivo pode não existir ainda -> retornar -1
+            return -1;
         }
         try{ //trata se o arquivo estiver vazio
             return Integer.parseInt(id_temp);
@@ -69,39 +78,50 @@ public class Venda {
     private void setIdFile(int id){
         String id_temp = Integer.toString(id);
 
-        try {
-            FileWriter fileWriter = new FileWriter(FILENAME);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(FILENAME))) {
             bufferedWriter.write(id_temp);
         } catch (IOException e) {
-            System.err.println(":("+e.getMessage());
+            System.err.println(":(" + e.getMessage());
         }
     }// end method
     private double calcularValor(Produto[] produtos){
         double count = 0;
+        if (produtos == null) return 0;
         for (int i = 0; i < produtos.length; i++){
             if(produtos[i] != null){
                 count += produtos[i].getPreco();
-            }else{
-                System.out.println("produto com valor nulo encontrado. Encerrado operação.");
-                break;
+            } else {
+                // produto nulo -> ignora
             }
         }
         return count;
     }
     public void excluir(){
-        this.existe = false; //Não achei um destructor pra java, ent vai assim mesmo. Gabiarra is always the way
+        this.existe = false;
     }
     public void devolver(){
-        this.devolvido = true;
-        for(int i = 0; i < produto.length; i++){
-            if(produto[i].getEstoque().getQuantidade() != 0){
-                //adiciona um no estoque do produto novamente
-                produto[i].getEstoque().setQuantidade(produto[i].getEstoque().getQuantidade()+1);
+        if(!this.devolvido) {
+            this.devolvido = true;
+            for(int i = 0; i < produto.length; i++){
+                if(produto[i] != null && produto[i].getEstoque() != null){
+                    double q = produto[i].getEstoque().getQuantidade();
+                    produto[i].getEstoque().setQuantidade(q + 1);
+                }
             }
         }
     }
+
+    // getters usados pelos testes
     public int getId_venda() {
         return id_venda;
     }
-}// class
+    public boolean isExiste() {
+        return existe;
+    }
+    public boolean isDevolvido() {
+        return devolvido;
+    }
+    public double getValor() {
+        return valor;
+    }
+}

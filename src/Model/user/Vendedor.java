@@ -15,38 +15,58 @@ public class Vendedor extends Pessoa {
         this.loja = loja;
     }
 
+    @Override
     public void inativar() {
         this.setAtivo(false);
     }
+
+    /**
+     * 1 = nome
+     * 2 = cpf
+     * 3 = comissao
+     * 4 = salario
+     */
+    @Override
     public void EditarDados(int[] opcoes, String[] alteracoes) {
-        if(opcoes.length<=0 || alteracoes.length<=0) { // Tratamento de exceção
-            System.out.println("Dados inválidos. Operação cancelada.");
-            if(opcoes.length !=  alteracoes.length) {
-                System.out.println("Quantidade de opções diferente da quantidade dos dados fornecidos. Operação cancelada.");
-            }
-        }//fim do tratamento de exceção
-        /*
-         * 1 = nome
-         * 2 = cpf
-         * 3 = comissao
-         * 4 = salario
-         * */
-        for(int i = 0; i < opcoes.length; i++) {
-            switch(opcoes[i]) {
+        if (opcoes == null || alteracoes == null) return;
+        int n = Math.min(opcoes.length, alteracoes.length);
+        for (int i = 0; i < n; i++) {
+            switch (opcoes[i]) {
                 case 1:
-                    this.setNome(alteracoes[i]); break;
+                    this.setNome(alteracoes[i]);
+                    break;
                 case 2:
-                    this.setCpf(alteracoes[i]); break;
+                    this.setCpf(alteracoes[i]);
+                    break;
                 case 3:
-                    this.comissao  = Double.parseDouble(alteracoes[i]); break;
+                    try {
+                        this.comissao = Double.parseDouble(alteracoes[i]);
+                    } catch (NumberFormatException ignored) {}
+                    break;
                 case 4:
-                    this.salario = Double.parseDouble(alteracoes[i]); break;
+                    try {
+                        this.salario = Double.parseDouble(alteracoes[i]);
+                    } catch (NumberFormatException ignored) {}
+                    break;
                 default:
-                    System.out.println("Dados inválidos");
+                    // ignorar
             }
         }
-    }//EditarDados end
+    }
+
     protected void EditarLoja(Loja loja){
         this.loja = loja;
     }
+
+    // getters usados nos testes
+    public double getComissao() {
+        return comissao;
+    }
+    public double getSalario() {
+        return salario;
+    }
+    public Loja getLoja() {
+        return loja;
+    }
+    // nome, cpf e ativo já têm getters na classe Pessoa
 }

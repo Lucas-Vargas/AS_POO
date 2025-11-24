@@ -1,33 +1,27 @@
 package Model;
 
 public class Produto {
-    private String nome,descricao;
+    private String nome, descricao;
     private double preco;
     private Estoque estoque;
-    private boolean existe;
+    private boolean existe = true;
 
     public Produto(String nome, String descricao, double preco, Estoque estoque){
         this.nome = nome;
         this.descricao = descricao;
         this.preco = preco;
         this.estoque = estoque;
+        this.existe = true;
     }
 
     public boolean ValidarPreco(double preco) {
-        if (preco <= 0) {
-            return false;
-        }else{
-            return true;
-        }
-        //TODO later
+        return preco > 0;
     }
-    public boolean ValidarnomeDesc(String descricao, String nome) {
-        if(descricao.isEmpty() || nome.isEmpty()) {
-            return false;
-        }else{
-            return true;
-        }
-        //TODO later
+
+    // Ajustei a assinatura para (nome, descricao) para bater com os testes
+    public boolean ValidarnomeDesc(String nome, String descricao) {
+        if(nome == null || descricao == null) return false;
+        return !nome.isEmpty() && !descricao.isEmpty();
     }
 
     public double getPreco() {
@@ -53,5 +47,14 @@ public class Produto {
         this.nome = nome;
     }
 
-}//endclass
-
+    // getters adicionados
+    public String getNome() {
+        return nome;
+    }
+    public String getDescricao() {
+        return descricao;
+    }
+    public boolean isExiste() {
+        return existe;
+    }
+}

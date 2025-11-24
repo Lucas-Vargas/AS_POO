@@ -5,11 +5,25 @@ public abstract class Pessoa {
     protected String cpf;
     protected boolean ativo;
 
-    abstract void inativar();
-    abstract void EditarDados(int[] opcoes, String[] alteracoes);
+    public Pessoa() {
+        this.ativo = true;
+    }
 
+    abstract public void inativar();
+    abstract public void EditarDados(int[] opcoes, String[] alteracoes);
 
-    //setters
+    // getters públicos usados pelos testes
+    public String getNome() {
+        return nome;
+    }
+    public String getCpf() {
+        return cpf;
+    }
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    // setters protegidos (mantive protected)
     protected void setAtivo(boolean ativo) {
         this.ativo = ativo;
     }
@@ -19,5 +33,4 @@ public abstract class Pessoa {
     protected void setNome(String nome) {
         this.nome = nome;
     }
-
 }
