@@ -11,19 +11,12 @@ public class Credenciado extends Cliente implements ICliente {
         this.desconto_default = desconto_default;
     }
 
-    public double getDesconto_default() {
-        return desconto_default;
-    }
+    public double getDesconto_default() { return desconto_default; }
+    public void criar_cartao() { this.possui_cartao = true; }
+    public boolean isPossui_cartao() { return possui_cartao; }
 
-    public void criar_cartao() {
-        this.possui_cartao = true;
-    }
-
-    public boolean isPossui_cartao() {
-        return possui_cartao;
-    }
-
-    public int getCodigo() {
-        return 101;
-    }
+    /**
+     * Retorna um código fixo (pode ser sobrescrito para gerar códigos dinâmicos).
+     */
+    public int getCodigo() { return 101; }
 }

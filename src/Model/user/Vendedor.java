@@ -1,12 +1,15 @@
 package Model.user;
+
 import Model.Loja;
 
-public class Vendedor extends Pessoa {
+public class Vendedor extends Pessoa implements IVendedor {
 
-    private double comissao, salario;
+    private double comissao;
+    private double salario;
     private Loja loja;
 
     public Vendedor(String nome, String cpf, double comissao, double salario, Loja loja) {
+        super();
         this.nome = nome;
         this.cpf = cpf;
         this.ativo = true;
@@ -16,9 +19,7 @@ public class Vendedor extends Pessoa {
     }
 
     @Override
-    public void inativar() {
-        this.setAtivo(false);
-    }
+    public void inativar() { this.setAtivo(false); }
 
     /**
      * 1 = nome
@@ -39,14 +40,10 @@ public class Vendedor extends Pessoa {
                     this.setCpf(alteracoes[i]);
                     break;
                 case 3:
-                    try {
-                        this.comissao = Double.parseDouble(alteracoes[i]);
-                    } catch (NumberFormatException ignored) {}
+                    try { this.comissao = Double.parseDouble(alteracoes[i]); } catch (NumberFormatException ignored) {}
                     break;
                 case 4:
-                    try {
-                        this.salario = Double.parseDouble(alteracoes[i]);
-                    } catch (NumberFormatException ignored) {}
+                    try { this.salario = Double.parseDouble(alteracoes[i]); } catch (NumberFormatException ignored) {}
                     break;
                 default:
                     // ignorar
@@ -54,19 +51,11 @@ public class Vendedor extends Pessoa {
         }
     }
 
-    protected void EditarLoja(Loja loja){
-        this.loja = loja;
-    }
+    protected void EditarLoja(Loja loja) { this.loja = loja; }
 
-    // getters usados nos testes
-    public double getComissao() {
-        return comissao;
-    }
-    public double getSalario() {
-        return salario;
-    }
-    public Loja getLoja() {
-        return loja;
-    }
-    // nome, cpf e ativo já têm getters na classe Pessoa
+    public double getComissao() { return comissao; }
+    public void setComissao(double comissao) { this.comissao = comissao; }
+    public double getSalario() { return salario; }
+    public void setSalario(double salario) { this.salario = salario; }
+    public Loja getLoja() { return loja; }
 }

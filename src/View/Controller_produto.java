@@ -1,33 +1,61 @@
 package View;
+
 import Model.Estoque;
 import Model.Produto;
 
 public class Controller_produto implements Produto_Interface {
-    public Produto cadastroProduto(String nome, String descricao, double preco, Estoque estoque){
-        return new Produto(nome, descricao, preco, estoque);
+
+    private final Estoque estoqueGeral;
+
+    public Controller_produto(Estoque estoqueGeral) {
+        this.estoqueGeral = estoqueGeral;
     }
+
+    @Override
+    public Produto cadastroProduto(String nome, String descricao, String id, double preco, double quantidadeInicial) {
+        Produto novoProduto = new Produto(nome, descricao, id, preco, quantidadeInicial);
+        this.estoqueGeral.adicionarProduto(novoProduto, quantidadeInicial);
+        return novoProduto;
+    }
+
+    @Override
     public void excluirProduto(Produto produto){
+        if (produto == null) return;
         produto.excluir();
+        // opcional: remover do inventário
+        // estoqueGeral.removerProduto(produto, estoqueGeral.getQuantidadeProduto(produto));
     }
-    public void alterarEstoque(double valor, Produto produto){
 
-        double valor_anterior = produto.getEstoque().getQuantidade();
-        if(valor_anterior==valor){
-            System.out.println("Quantidades iguais. Operação cancelada.\nValor fornecido"+valor+"\nValor atual"+valor_anterior);
-            return;
+    @Override
+    public void adicionarEstoque(double quantidade, Produto produto){
+        if (quantidade > 0 && produto != null) {
+            this.estoqueGeral.adicionarProduto(produto, quantidade);
         }
-        produto.getEstoque().setQuantidade(valor);
-        double valor_atual = produto.getEstoque().getQuantidade();
+    }
 
-        System.out.println("Estoque alterado de " + valor_anterior + "para "+ valor_atual);
+    @Override
+    public void removerEstoque(double quantidade, Produto produto){
+        if (quantidade > 0 && produto != null) {
+            if (this.estoqueGeral.verificarDisponibilidade(produto, quantidade)) {
+                this.estoqueGeral.removerProduto(produto, quantidade);
+            } else {
+                System.err.println("Erro: Quantidade insuficiente em estoque para " + produto.getNome());
+            }
+        }
     }
+
+    @Override
     public void alterarDescricao(String descricao, Produto produto){
-        produto.setDescricao(descricao);
+        if (produto != null) produto.setDescricao(descricao);
     }
+
+    @Override
     public void alterarNome(String nome, Produto produto){
-        produto.setNome(nome);
+        if (produto != null) produto.setNome(nome);
     }
+
+    @Override
     public void alterarPreco(double preco, Produto produto){
-        produto.setPreco(preco);
+        if (produto != null) produto.setPreco(preco);
     }
 }

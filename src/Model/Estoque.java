@@ -4,43 +4,74 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Estoque {
-    private Map<Produto, Double> produtos; // Produto -> quantidade
+
+    // O estoque armazena o Produto (chave) e a quantidade (valor)
+    private Map<Produto, Double> inventario;
 
     public Estoque() {
-        this.produtos = new HashMap<>();
+        this.inventario = new HashMap<>();
     }
 
+    /**
+     * Adiciona ou atualiza a quantidade de um produto no inventário.
+     */
     public void adicionarProduto(Produto produto, double quantidade) {
         if (produto == null || quantidade <= 0) return;
-        produtos.put(produto, produtos.getOrDefault(produto, 0.0) + quantidade);
+        double quantidadeAtual = inventario.getOrDefault(produto, 0.0);
+        inventario.put(produto, quantidadeAtual + quantidade);
     }
 
+    /**
+     * Remove uma quantidade do produto, se disponível.
+     * Se após a remoção a quantidade for zero, remove a entrada do mapa.
+     */
     public void removerProduto(Produto produto, double quantidade) {
-        if (produto == null || quantidade <= 0 || !produtos.containsKey(produto)) return;
-        double atual = produtos.get(produto);
-        if (atual <= quantidade) {
-            produtos.remove(produto);
+        if (produto == null || quantidade <= 0) return;
+        double quantidadeAtual = inventario.getOrDefault(produto, 0.0);
+        if (quantidadeAtual >= quantidade) {
+            double nova = quantidadeAtual - quantidade;
+            if (nova <= 0.0) {
+                inventario.remove(produto);
+            } else {
+                inventario.put(produto, nova);
+            }
         } else {
-            produtos.put(produto, atual - quantidade);
+            System.err.println("Erro: Não há estoque suficiente para remover " + produto.getNome());
         }
     }
 
-    public boolean verificarDisponibilidade(Produto produto, double quantidade) {
-        if (produto == null || !produtos.containsKey(produto)) return false;
-        return produtos.get(produto) >= quantidade;
+    /**
+     * Verifica se a quantidade desejada está disponível em estoque.
+     */
+    public boolean verificarDisponibilidade(Produto produto, double quantidadeDesejada) {
+        if (produto == null || quantidadeDesejada <= 0) return false;
+        double quantidadeAtual = inventario.getOrDefault(produto, 0.0);
+        return quantidadeAtual >= quantidadeDesejada;
     }
 
+    /**
+     * Retorna a quantidade atual de um produto específico no estoque.
+     */
+    public double getQuantidadeProduto(Produto produto) {
+        return inventario.getOrDefault(produto, 0.0);
+    }
+
+    /**
+     * Exibe o estado atual do estoque.
+     */
     public void exibirEstoque() {
-        System.out.println("\n--- Estoque Atual ---");
-        if (produtos.isEmpty()) {
-            System.out.println("Estoque vazio.");
+        System.out.println("--- INVENTÁRIO ATUAL ---");
+        if (inventario.isEmpty()) {
+            System.out.println("O estoque está vazio.");
             return;
         }
-        for (Map.Entry<Produto, Double> entry : produtos.entrySet()) {
+        for (Map.Entry<Produto, Double> entry : inventario.entrySet()) {
             Produto p = entry.getKey();
-            double q = entry.getValue();
-            System.out.println(p.getNome() + " | " + p.getDescricao() + " | Preço: " + p.getPreco() + " | Quantidade: " + q);
+            Double q = entry.getValue();
+            if (p.isExiste() && q > 0) {
+                System.out.println("ID: " + p.getId() + " | Produto: " + p.getNome() + " | Quantidade: " + q);
+            }
         }
-        System.out.println("---------------------\n");
+        System.out.println("------------------------");
     }
 }

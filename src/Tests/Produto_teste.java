@@ -9,40 +9,39 @@ public class Produto_teste {
 
     @Test
     void deve_criar_produto_corretamente() {
-        Estoque meuEstoque = new Estoque();
-        meuEstoque.setQuantidade(50.0);
+        // CORREÇÃO: O construtor de Produto AGORA TEM 5 ARGUMENTOS:
+        // (String nome, String descricao, String id, double preco, double quantidade)
 
-        Produto produto = new Produto("Camiseta", "Algodao Pima", 89.90, meuEstoque);
+        Produto produto = new Produto("Camiseta", "Algodao Pima", "CAM001", 89.90, 10.0);
 
         Assertions.assertEquals("Camiseta", produto.getNome());
+        Assertions.assertEquals("CAM001", produto.getId()); // Testar o ID
         Assertions.assertEquals(89.90, produto.getPreco(), 0.001);
-        Assertions.assertEquals(meuEstoque, produto.getEstoque());
+
+        // CORREÇÃO: Testar a quantidade, pois o objeto Estoque não faz mais parte do Produto.
+        Assertions.assertEquals(10.0, produto.getQuantidade(), 0.001);
     }
 
     @Test
-    void deve_validar_preco_positivo() {
-        Estoque estoqueVazio = new Estoque();
-        Produto produtoTeste = new Produto("Teste", "Teste", 10.0, estoqueVazio);
+    void deve_atualizar_quantidade_do_produto() {
+        // O produto em si deve ser capaz de ter sua quantidade modificada.
+        Produto produto = new Produto("Camiseta", "Algodao Pima", "CAM001", 89.90, 10.0);
 
-        Assertions.assertTrue(produtoTeste.ValidarPreco(0.01));
-        Assertions.assertFalse(produtoTeste.ValidarPreco(0.0));
-        Assertions.assertFalse(produtoTeste.ValidarPreco(-5.0));
+        produto.setQuantidade(5.0);
+        Assertions.assertEquals(5.0, produto.getQuantidade(), 0.001);
+
+        // Testar a modificação:
+        produto.setQuantidade(produto.getQuantidade() + 15.0);
+        Assertions.assertEquals(20.0, produto.getQuantidade(), 0.001);
     }
 
-    @Test
-    void deve_validar_nome_e_descricao_nao_vazios() {
-        Estoque estoqueVazio = new Estoque();
-        Produto produtoTeste = new Produto("Teste", "Teste", 10.0, estoqueVazio);
-
-        Assertions.assertTrue(produtoTeste.ValidarnomeDesc("Nome OK", "Desc OK"));
-        Assertions.assertFalse(produtoTeste.ValidarnomeDesc("", "Desc OK"));
-        Assertions.assertFalse(produtoTeste.ValidarnomeDesc("Nome OK", ""));
-    }
+    // REMOVIDO: O teste 'deve_validar_preco_positivo' e 'deve_validar_nome_e_descricao_nao_vazios'
+    // A lógica de validação deve ser feita no Controller/View antes de instanciar o Model.
 
     @Test
     void deve_excluir_o_produto() {
-        Estoque estoqueVazio = new Estoque();
-        Produto produto = new Produto("Fone", "Bluetooth", 200.0, estoqueVazio);
+        // CORREÇÃO: Construtor ajustado para 5 argumentos.
+        Produto produto = new Produto("Fone", "Bluetooth", "FONE01", 200.0, 5.0);
 
         produto.excluir();
 

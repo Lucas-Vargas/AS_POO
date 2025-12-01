@@ -5,58 +5,94 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Loja {
-    private int id_loja;
-    private double receita = 0.0;
-    private String nome;
-    private boolean ativa;
+
+    // --- Atributos ---
     private Estoque estoque;
     private List<Vendedor> vendedores;
     private List<Venda> vendasRealizadas;
 
+    private String nome = "Loja Principal";
+    private double receitaTotal;
+    private boolean ativa = true;
+    private static int proximoIdVenda = 1;
+
+    // Construtor
     public Loja() {
-        this.nome = "Loja Principal";
-        this.ativa = true;
         this.estoque = new Estoque();
         this.vendedores = new ArrayList<>();
         this.vendasRealizadas = new ArrayList<>();
+        this.receitaTotal = 0.0;
     }
 
+    // --- Getters e Setters ---
+
+    // CORRIGIDO: Este método deve retornar o objeto Estoque
     public Estoque getEstoque() {
-        return estoque;
+        return estoque; // <--- INSTRUÇÃO DE RETORNO AUSENTE CORRIGIDA
     }
 
-    public void adicionarVendedor(Vendedor v) {
-        if (v != null && !vendedores.contains(v)) {
-            vendedores.add(v);
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        if (nome != null && !nome.trim().isEmpty()) {
+            this.nome = nome;
         }
     }
 
-    public void registrarVenda(Venda venda) {
-        if (venda != null) {
-            vendasRealizadas.add(venda);
-            receita += venda.getValor();
-        }
+    public double getReceita() {
+        return receitaTotal;
     }
 
     public List<Venda> getVendasRealizadas() {
         return vendasRealizadas;
     }
 
-    public String resumo_loja() {
-        return "Nome: " + nome + "\nReceita: " + receita + "\nAtiva: " + ativa;
+    public static int getProximoIdVenda() {
+        return proximoIdVenda;
     }
 
-    // getters/setters básicos
-    public void setNome(String nome) {
-        this.nome = nome;
+    public boolean isAtiva() {
+        return ativa;
     }
-    public String getNome() {
-        return nome;
-    }
+
     public void setAtiva(boolean ativa) {
         this.ativa = ativa;
     }
-    public boolean isAtiva() {
-        return ativa;
+
+    // --- Métodos de Lógica (Usados pelos Controllers) ---
+
+    public void adicionarVendedor(Vendedor vendedor) {
+        this.vendedores.add(vendedor);
+    }
+
+    /**
+     * Registra uma venda, adiciona à lista e atualiza a receita total.
+     */
+    public void registrarVenda(Venda venda) {
+        if (venda != null && venda.isExiste() && !venda.isDevolvido()) {
+            this.vendasRealizadas.add(venda);
+            this.receitaTotal += venda.getValor();
+            proximoIdVenda++;
+        }
+    }
+
+    /**
+     * Ajusta a receita após exclusão ou devolução.
+     */
+    public void ajustarReceitaPorAcao(Venda venda, double valorParaAjuste) {
+        this.receitaTotal += valorParaAjuste;
+    }
+
+    /**
+     * Método de relatório.
+     */
+    public void resumo_loja() {
+        System.out.println("--- RESUMO DA LOJA (" + this.nome + ") ---");
+        System.out.println("Status: " + (this.ativa ? "ATIVA" : "INATIVA"));
+        System.out.println("Receita Total: R$ " + String.format("%.2f", this.receitaTotal));
+        System.out.println("Vendas Registradas: " + this.vendasRealizadas.size());
+        System.out.println("------------------------------------");
     }
 }

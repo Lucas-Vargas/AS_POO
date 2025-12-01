@@ -1,11 +1,13 @@
 package Model.user;
 
-public class Cliente extends Pessoa {
+public class Cliente extends Pessoa implements ICliente {
+
     private String telefone;
     private String email;
     private double debito;
 
     public Cliente(String nome, String cpf, String telefone, String email) {
+        super();
         this.nome = nome;
         this.cpf = cpf;
         this.telefone = telefone;
@@ -14,14 +16,13 @@ public class Cliente extends Pessoa {
         this.ativo = true;
     }
 
-    // ações
     @Override
     public void inativar() {
         this.setAtivo(false);
     }
 
     /**
-     * Mapeamento de opções:
+     * Mapear opções de edição:
      * 1 = nome
      * 2 = cpf
      * 3 = telefone
@@ -49,24 +50,21 @@ public class Cliente extends Pessoa {
                 case 5:
                     try {
                         this.debito = Double.parseDouble(alteracoes[i]);
-                    } catch (NumberFormatException e) {
-                        // ignore or keep previous value
-                    }
+                    } catch (NumberFormatException ignored) {}
                     break;
                 default:
-                    // opção desconhecida -> ignorar
+                    // ignorar
             }
         }
     }
 
-    // getters e setters usados pelos testes
-    public String getTelefone() {
-        return telefone;
-    }
-    public String getEmail() {
-        return email;
-    }
-    public double getDebito() {
-        return debito;
-    }
+    // getters
+    public String getTelefone() { return telefone; }
+    public String getEmail() { return email; }
+    public double getDebito() { return debito; }
+
+    // setters (se necessário)
+    protected void setTelefone(String telefone) { this.telefone = telefone; }
+    protected void setEmail(String email) { this.email = email; }
+    protected void setDebito(double debito) { this.debito = debito; }
 }

@@ -1,169 +1,74 @@
+package View;
+
 import Model.Loja;
-import Model.Estoque;
 import Model.Produto;
 import Model.Venda;
 import Model.user.Cliente;
-import Model.user.Credenciado;
 import Model.user.Vendedor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
 public class Main {
-
     public static void main(String[] args) {
-        // 1. INICIALIZAÇÃO E SETUP
+
+        System.out.println("--- INICIALIZAÇÃO DO SISTEMA DE VENDAS ---");
+
+        // 1. Inicializa a Loja e Controllers
         Loja lojaPrincipal = new Loja();
-        Estoque estoque = lojaPrincipal.getEstoque();
 
-        System.out.println("==================================================");
-        System.out.println("          Simulação do Sistema de Vendas da " + lojaPrincipal.getNome());
-        System.out.println("==================================================");
+        // Controller_produto: Geralmente precisa do Estoque
+        Controller_produto controllerProduto = new Controller_produto(lojaPrincipal.getEstoque());
 
-        // 2. CRIAÇÃO DE USUÁRIOS
-        Vendedor vendedorA = new Vendedor("Rui Castro", "11122233344", 0.05, 2500.0, lojaPrincipal);
-        Vendedor vendedorB = new Vendedor("Sara Lopes", "55566677788", 0.07, 2800.0, lojaPrincipal);
+        // CORRIGIDO: Passando o objeto 'lojaPrincipal' para o construtor
+        Controller_venda controllerVenda = new Controller_venda(lojaPrincipal);
 
-        Cliente clienteComum = new Cliente("Joana Silva", "99988877766", "21987654321", "joana@email.com");
-        Credenciado clienteVIP = new Credenciado("Pedro Alves", "12312312300", "21912345678", "pedro@cred.com", 1001, true, 0.15);
+        // 2. Criação de Usuários e Produtos de Teste
 
-        lojaPrincipal.adicionarVendedor(vendedorA);
-        lojaPrincipal.adicionarVendedor(vendedorB);
+        // Vendedor
+        Vendedor v1 = new Vendedor("Ana Garcia", "111.111.111-11", 0.05, 2500.0, lojaPrincipal);
+        lojaPrincipal.adicionarVendedor(v1);
 
-        System.out.println("\n--- Status Inicial dos Clientes ---");
-        System.out.println("Joana (Comum) Ativo: " + clienteComum.isAtivo());
-        System.out.println("Pedro (VIP) Desconto: " + clienteVIP.getDesconto_default() * 100 + "%");
-        System.out.println("-----------------------------------\n");
+        // Cliente
+        Cliente c1 = new Cliente("Ricardo Almeida", "222.222.222-22", "(21) 98765-4321", "ricardo@mail.com");
 
-        // 3. CRIAÇÃO DE PRODUTOS E ADIÇÃO AO ESTOQUE
-        Produto p1 = new Produto(1, "Smartphone Modelo X", 1500.00);
-        Produto p2 = new Produto(2, "Fone Bluetooth", 250.00);
-        // O trecho anterior estava incompleto aqui. O produto p3 foi recriado.
-        Produto p3 = new Produto(3, "Cabo USB-C", 50.00);
+        // Cria e cadastra Produtos
+        Produto p1 = controllerProduto.cadastroProduto("Celular X", "Modelo top de linha", "CX100", 3500.00, 5.0);
+        Produto p2 = controllerProduto.cadastroProduto("Carregador USB", "Rápido 65W", "CRG01", 150.00, 20.0);
 
-        estoque.adicionarProduto(p1, 10);
-        estoque.adicionarProduto(p2, 25);
-        estoque.adicionarProduto(p3, 50);
+        System.out.println("\n--- ESTADO INICIAL ---");
+        lojaPrincipal.resumo_loja();
+        lojaPrincipal.getEstoque().exibirEstoque();
 
-        estoque.exibirEstoque();
+        // 3. Simulação de Venda (usando o Controller de Venda)
 
-        // 4. SIMULAÇÃO DE VENDAS
+        Produto[] itensVenda1 = {p1, p2};
+        double valorVenda1 = p1.getPreco() + p2.getPreco();
+        int parcelas = 6;
 
-        // --- Venda 1: Cliente Comum ---
-        System.out.println("SIMULAÇÃO DE VENDA 1 (Cliente Comum)");
+        System.out.println("\n--- REALIZANDO VENDA 1 ---");
 
-        List<Produto> itensVenda1 = new ArrayList<>();
-        itensVenda1.add(p1); // 1x Smartphone
-        itensVenda1.add(p2); // 1x Fone
+        // Chamando o método newVenda do Controller_venda
+        Venda venda1 = controllerVenda.newVenda(lojaPrincipal, c1, v1, itensVenda1, parcelas);
 
-        if (estoque.verificarDisponibilidade(p1, 1) && estoque.verificarDisponibilidade(p2, 1)) {
-            double totalVenda1 = p1.getPreco() + p2.getPreco(); // 1500 + 250 = 1750.00
+        if (venda1 != null) {
+            System.out.println("Venda realizada com sucesso!");
+            System.out.println("Detalhes: Vendedor: " + venda1.getVendedor().getNome() +
+                    ", Valor: R$ " + String.format("%.2f", venda1.getValor()));
 
-            // Simula a remoção do estoque
-            estoque.removerProduto(p1, 1);
-            estoque.removerProduto(p2, 1);
-
-            Venda venda1 = new Venda(vendedorA, clienteComum, itensVenda1, totalVenda1);
-            lojaPrincipal.registrarVenda(venda1);
-
-        } else {
-            System.out.println("Venda 1 cancelada por falta de estoque.");
+            // Verifica se o estoque foi atualizado
+            System.out.println("Novo estoque de " + p1.getNome() + ": " + lojaPrincipal.getEstoque().getQuantidadeProduto(p1));
         }
 
-        // --- Venda 2: Cliente VIP (com desconto) ---
-        System.out.println("SIMULAÇÃO DE VENDA 2 (Cliente Credenciado)");
+        // 4. Exemplo de Devolução (usando o Controller de Venda)
+        if (venda1 != null) {
+            System.out.println("\n--- DEVOLUÇÃO DA VENDA 1 ---");
+            controllerVenda.devolverVenda(lojaPrincipal, venda1);
 
-        List<Produto> itensVenda2 = new ArrayList<>();
-        itensVenda2.add(p3); // 1x Cabo USB-C (50.00)
-
-        if (estoque.verificarDisponibilidade(p3, 1)) {
-            double precoBruto = p3.getPreco(); // 50.00
-            double desconto = clienteVIP.getDesconto_default(); // 0.15 (15%)
-            double totalVenda2 = precoBruto * (1.0 - desconto); // 50.00 * 0.85 = 42.50
-
-            // Simula a remoção do estoque
-            estoque.removerProduto(p3, 1);
-
-            Venda venda2 = new Venda(vendedorB, clienteVIP, itensVenda2, totalVenda2);
-            lojaPrincipal.registrarVenda(venda2);
-
-            // Simula uma dívida (débito) para o cliente VIP
-            clienteVIP.EditarDados(new int[]{5}, new String[]{"42.50"});
-
-        } else {
-            System.out.println("Venda 2 cancelada por falta de estoque.");
+            // Verifica se o estoque foi reintegrado
+            System.out.println("Estoque após devolução de " + p1.getNome() + ": " + lojaPrincipal.getEstoque().getQuantidadeProduto(p1));
         }
 
-        // 5. DEMONSTRAÇÃO DE MÉTODOS DE USER
-
-        // Inativar cliente comum
-        clienteComum.inativar();
-        System.out.println("Joana Silva (Cliente Comum) foi inativada.");
-
-        // Editar dados do vendedor
-        System.out.println("\nSalário antigo do Rui: " + vendedorA.getSalario());
-        vendedorA.EditarDados(new int[]{4}, new String[]{"3000.00"});
-        System.out.println("Salário novo do Rui: " + vendedorA.getSalario());
-
-        // 6. PERSISTÊNCIA DO ID DA VENDA (Seu código)
-        System.out.println("\n==================================================");
-        System.out.println("          DEMONSTRAÇÃO DE PERSISTÊNCIA DO ID");
-        System.out.println("==================================================");
-
-        final String FILENAME = "Venda_Id.txt";
-        final String FILEPATH = "./" + FILENAME;
-
-        // Simula que o próximo ID a ser gravado é 3
-        String id_temp = Integer.toString(3);
-
-        try (FileWriter fileWriter = new FileWriter(FILENAME);
-             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
-
-            System.out.println("Gravando o ID temporário: " + id_temp);
-            bufferedWriter.write(id_temp);
-
-        } catch (IOException e) {
-            System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
-        }
-
-        String firstLine = null;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILEPATH))) {
-            firstLine = reader.readLine();
-
-        } catch (IOException e) {
-            System.err.println("Erro ao ler o arquivo: " + e.getMessage());
-        }
-
-        System.out.print("ID lido do arquivo: ");
-        try { // Trata se o arquivo estiver vazio
-            if (firstLine != null) {
-                int idLido = Integer.parseInt(firstLine);
-                System.out.println(idLido);
-            } else {
-                System.out.println("Arquivo vazio ou ID não encontrado. (Retorno: -1)");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("ID inválido no arquivo. (Retorno: -1)");
-            System.out.println("Detalhe do erro: " + e.getMessage());
-        }
-
-
-        // 7. ESTADO FINAL DO SISTEMA
-        System.out.println("\n==================================================");
-        System.out.println("          ESTADO FINAL DO SISTEMA");
-        System.out.println("==================================================");
-
-        System.out.println("\n--- Clientes ---");
-        System.out.println("Joana Silva (Ativo?): " + clienteComum.isAtivo());
-        System.out.println("Pedro Alves (Débito): R$ " + String.format("%.2f", clienteVIP.getDebito()));
-
-        estoque.exibirEstoque();
-        System.out.println("Total de vendas registradas: " + lojaPrincipal.getVendasRealizadas().size());
+        // 5. Estado Final
+        System.out.println("\n--- ESTADO FINAL ---");
+        lojaPrincipal.resumo_loja();
+        lojaPrincipal.getEstoque().exibirEstoque();
     }
 }

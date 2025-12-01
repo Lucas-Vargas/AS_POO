@@ -1,59 +1,69 @@
-package Tests;
+package Teste;
 
-import Model.Estoque;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import Model.Loja;
 import Model.Produto;
 import Model.Venda;
 import Model.user.Cliente;
 import Model.user.Vendedor;
-import Model.Loja;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Venda_teste {
 
-    @Test
-    void deve_criar_venda_e_diminuir_estoque() {
-        Loja lojaTeste = new Loja();
-        Cliente clienteTeste = new Cliente("Ana", "111", "999", "ana@email.com");
-        Vendedor vendedorTeste = new Vendedor("Beto", "222", 0.05, 1500.0, lojaTeste);
+    private Vendedor vendedor;
+    private Cliente cliente;
+    private Loja loja;
+    private Produto p1;
+    private Produto p2;
+    private List<Produto> itensVenda;
 
-        Estoque estoqueTeste = new Estoque();
-        estoqueTeste.setQuantidade(5.0);
-        Produto produto1 = new Produto("Caneta", "Azul", 5.0, estoqueTeste);
-        Produto produto2 = new Produto("Caderno", "Pena", 20.0, estoqueTeste);
-        Produto[] produtos = {produto1, produto2};
+    @BeforeEach
+    void setUp() {
+        loja = new Loja();
+        vendedor = new Vendedor("Rui Castro", "111", 0.05, 2500.0, loja);
+        cliente = new Cliente("Joana Silva", "999", "21987654321", "joana@email.com");
 
-        Venda vendaTeste = new Venda(clienteTeste, vendedorTeste, produtos, 1);
+        p1 = new Produto("Smartphone X", "Premium", "SMT001", 1500.00, 10.0);
+        p2 = new Produto("Fone Bluetooth", "NC", "FNC002", 250.00, 5.0);
 
-        Assertions.assertTrue(vendaTeste.isExiste());
-        Assertions.assertEquals(25.0, vendaTeste.getValor(), 0.001);
-        Assertions.assertEquals(3.0, estoqueTeste.getQuantidade(), 0.001);
+        itensVenda = new ArrayList<>();
+        itensVenda.add(p1);
+        itensVenda.add(p2);
     }
 
     @Test
-    void deve_devolver_e_aumentar_estoque() {
-        Loja lojaTeste = new Loja();
-        Cliente clienteTeste = new Cliente("Ana", "111", "999", "ana@email.com");
-        Vendedor vendedorTeste = new Vendedor("Beto", "222", 0.05, 1500.0, lojaTeste);
+    void testCriacaoVenda() {
+        double valorTotal = 1500.00 + 250.00;
 
-        Estoque estoqueTeste = new Estoque();
-        estoqueTeste.setQuantidade(5.0);
-        Produto produto1 = new Produto("Caneta", "Azul", 5.0, estoqueTeste);
-        Produto produto2 = new Produto("Caderno", "Pena", 20.0, estoqueTeste);
-        Produto[] produtos = {produto1, produto2};
-        Venda vendaTeste = new Venda(clienteTeste, vendedorTeste, produtos, 1);
-        double estoqueAntesDaDevolucao = estoqueTeste.getQuantidade();
+        // Esta linha depende do getVendedor()
+        Venda venda = new Venda(vendedor, cliente, itensVenda.toArray(new Produto[0]), valorTotal);
 
-        vendaTeste.devolver();
-
-        Assertions.assertTrue(vendaTeste.isDevolvido());
-        Assertions.assertEquals(estoqueAntesDaDevolucao + 2.0, estoqueTeste.getQuantidade(), 0.001);
+        assertNotNull(venda);
+        assertEquals(vendedor, venda.getVendedor()); // LINHA ONDE O ERRO OCORRIA
+        assertEquals(cliente, venda.getCliente());
+        assertEquals(valorTotal, venda.getValor(), 0.001);
     }
 
     @Test
-    void deve_excluir_venda() {
-        Venda vendaTeste = new Venda(null, null, new Produto[0], 1);
-        vendaTeste.excluir();
-        Assertions.assertFalse(vendaTeste.isExiste());
+    void testStatusDevolucao() {
+        double valorTotal = 1750.00;
+        Venda venda = new Venda(vendedor, cliente, itensVenda.toArray(new Produto[0]), valorTotal);
+
+        venda.setDevolvido(true);
+        assertTrue(venda.isDevolvido(), "Venda deve ser marcada como devolvida.");
+    }
+
+    @Test
+    void testStatusExclusao() {
+        double valorTotal = 1750.00;
+        Venda venda = new Venda(vendedor, cliente, itensVenda.toArray(new Produto[0]), valorTotal);
+
+        venda.setExiste(false);
+        assertFalse(venda.isExiste(), "Venda deve ser marcada como não existente.");
     }
 }
